@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ps4_project fmt="en">
+<psproject fmt="gp4" version="1000">
   <volume>
     <volume_type>pkg_ps4_app</volume_type>
     <volume_id>PS4VOLUME</volume_id>
@@ -22,4 +22,4 @@
     <dir targ_path="roms" orig_path="roms"/>
     <file targ_path="roms/*" orig_path="roms/*" chunk_no="0"/>
   </files>
-</ps4_project>
+</psproject>
