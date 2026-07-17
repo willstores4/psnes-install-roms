@@ -70,10 +70,8 @@ int main(void) {
     // Dynamically load necessary modules to avoid DT_NEEDED boot crashes
     int sys_util_handle = sceKernelLoadStartModule("libSceSysUtil.sprx", 0, NULL, 0, NULL, NULL);
     int sys_svc_handle = sceKernelLoadStartModule("libSceSystemService.sprx", 0, NULL, 0, NULL, NULL);
-    int user_svc_handle = sceKernelLoadStartModule("libSceUserService.sprx", 0, NULL, 0, NULL, NULL);
 
     int (*sysUtilSendSystemNotificationWithText)(int, const char*) = NULL;
-    int (*userServiceInitialize)(void*) = NULL;
     int (*systemServiceHideSplashScreen)(void) = NULL;
 
     void* ptr = NULL;
@@ -81,22 +79,11 @@ int main(void) {
         sceKernelDlsym(sys_util_handle, "sceSysUtilSendSystemNotificationWithText", &ptr);
         sysUtilSendSystemNotificationWithText = (int (*)(int, const char*))ptr;
     }
-    if (user_svc_handle > 0) {
-        sceKernelDlsym(user_svc_handle, "sceUserServiceInitialize", &ptr);
-        userServiceInitialize = (int (*)(void*))ptr;
-    }
     if (sys_svc_handle > 0) {
         sceKernelDlsym(sys_svc_handle, "sceSystemServiceHideSplashScreen", &ptr);
         systemServiceHideSplashScreen = (int (*)(void))ptr;
     }
 
-    struct OrbisUserServiceInitializeParams {
-        uint32_t priority;
-    };
-    OrbisUserServiceInitializeParams user_params;
-    user_params.priority = 120;
-    
-    if (userServiceInitialize) userServiceInitialize(&user_params);
     if (systemServiceHideSplashScreen) systemServiceHideSplashScreen();
 
     if (sysUtilSendSystemNotificationWithText) {

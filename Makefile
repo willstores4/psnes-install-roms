@@ -20,7 +20,7 @@ TARGET = eboot.bin
 
 $(TARGET): $(ODIR) $(OBJS)
 	$(LD) $(ODIR)/*.o -o $(ODIR)/$(TARGET).elf $(LDFLAGS) $(LIBS)
-	$(OO_PS4_TOOLCHAIN)/bin/linux/create-fself -in=$(ODIR)/$(TARGET).elf -eboot=$(TARGET) --paid 0x3800000000000011
+	$(OO_PS4_TOOLCHAIN)/bin/linux/create-fself -in=$(ODIR)/$(TARGET).elf -eboot=$(TARGET)
 	@cp $(TARGET) pkg_structure/$(TARGET)
 	@echo "Build successful. eboot.bin copied to pkg_structure/"
 
