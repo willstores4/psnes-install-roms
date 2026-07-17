@@ -1,0 +1,36 @@
+name: Build PS4 Rom Installer PKG
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Compile C++ with OpenOrbis
+        uses: OpenOrbis/toolchain-action@main
+
+      - name: Download PkgTool.Core
+        run: |
+          wget https://github.com/OpenOrbis/LibOrbisPkg/releases/download/v1.1/PkgTool.Core.zip
+          unzip PkgTool.Core.zip -d PkgTool
+
+      - name: Build PKG
+        run: |
+          dotnet PkgTool/PkgTool.Core.dll pkg_build pkg_structure/pkg.gp4 pkg_structure/
+
+      - name: Upload PKG Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RomInstaller-PS4
+          path: pkg_structure/*.pkg
