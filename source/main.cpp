@@ -7,7 +7,14 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <orbis/Sysmodule.h>
-#include <orbis/SysUtil.h>
+
+extern "C" {
+    int sceSysUtilSendSystemNotificationWithText(int type, const char* text);
+    int sceSysmoduleLoadModuleInternal(uint32_t module);
+}
+
+#define SYSUTIL_MODULE_ID 0x009A
+
 
 void log_msg(const char* msg) {
     // Basic stdout print, which can be seen if someone checks PS4 UART
@@ -67,7 +74,7 @@ int copy_directory(const char* src_dir, const char* dst_dir) {
 int main(void) {
     log_msg("RomInstaller App Starting...");
     
-    sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_SYSUTIL);
+    sceSysmoduleLoadModuleInternal(SYSUTIL_MODULE_ID);
     sceSysUtilSendSystemNotificationWithText(222, "ROM Installer started! Copying files...");
     
     // Create base directories if they don't exist
