@@ -55,10 +55,14 @@ jobs:
           
           dirs = set()
           for root, _, files in os.walk("."):
+              if "sce_sys" in root: continue
               for file in files:
                   if file.endswith(".gp4") or file.endswith(".pkg"): continue
                   rel_path = os.path.relpath(os.path.join(root, file), ".").replace("\\\\", "/")
-                  xml += f"    <file targ_path=\"{rel_path}\" orig_path=\"{rel_path}\" chunk_no=\"0\"/>\n"
+                  if file == "eboot.bin":
+                      xml += f"    <file targ_path=\"{rel_path}\" orig_path=\"{rel_path}\" chunk_no=\"0\" btype=\"55\"/>\n"
+                  else:
+                      xml += f"    <file targ_path=\"{rel_path}\" orig_path=\"{rel_path}\" chunk_no=\"0\"/>\n"
                   
                   parts = rel_path.split("/")[:-1]
                   if parts:
