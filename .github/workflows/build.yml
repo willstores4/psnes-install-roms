@@ -28,23 +28,6 @@ jobs:
           TOOLCHAIN_DIR=$(find $GITHUB_WORKSPACE/openorbis -name "include" -type d | head -n 1 | xargs dirname)
           echo "OO_PS4_TOOLCHAIN=$TOOLCHAIN_DIR" >> $GITHUB_ENV
 
-      - name: Compile C++ Code
-        run: |
-          # Give execution permissions to OpenOrbis binaries
-          chmod +x $OO_PS4_TOOLCHAIN/bin/linux/*
-          cd pkg_structure
-          python -c "
-          data = bytearray(open('../coreinstaller/Image0/eboot.bin', 'rb').read())
-          data = data.replace(b'/app0/cores\0', b'/app0/roms\0\0')
-          data = data.replace(b'/data/self/retroarch/cores\0', b'/data/psnes/roms\0\0\0\0\0\0\0\0\0\0\0')
-          data = data.replace(b'/app0/cores/\0', b'/app0/roms/\0\0')
-          data = data.replace(b'/data/self/retroarch/cores/\0', b'/data/psnes/roms/\0\0\0\0\0\0\0\0\0\0\0\0')
-          data = data.replace(b'/data/self/retroarch\0', b'/data/psnes\0\0\0\0\0\0\0\0\0\0')
-          data = data.replace(b'/data/self\0', b'/data\0\0\0\0\0\0')
-          open('eboot.bin', 'wb').write(data)
-          "
-          cd ..
-
       - name: Generate GP4 dynamically
         run: |
           cd pkg_structure
