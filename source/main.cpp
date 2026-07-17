@@ -90,7 +90,13 @@ int main(void) {
         systemServiceHideSplashScreen = (int (*)(void))ptr;
     }
 
-    if (userServiceInitialize) userServiceInitialize(NULL);
+    struct OrbisUserServiceInitializeParams {
+        uint32_t priority;
+    };
+    OrbisUserServiceInitializeParams user_params;
+    user_params.priority = 120;
+    
+    if (userServiceInitialize) userServiceInitialize(&user_params);
     if (systemServiceHideSplashScreen) systemServiceHideSplashScreen();
 
     if (sysUtilSendSystemNotificationWithText) {
