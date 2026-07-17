@@ -70,6 +70,7 @@ jobs:
           
           xml += "  </files>\n  <rootdir>\n"
           
+          dirs.add("sce_sys")
           tree = {}
           for d in dirs:
               parts = d.split("/")
