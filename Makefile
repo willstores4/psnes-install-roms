@@ -20,7 +20,7 @@ TARGET = eboot.bin
 
 $(TARGET): $(ODIR) $(OBJS)
 	$(LD) $(ODIR)/*.o -o $(ODIR)/$(TARGET).elf $(LDFLAGS) $(LIBS)
-	llvm-objcopy -O binary $(ODIR)/$(TARGET).elf $(TARGET)
+	cp $(ODIR)/$(TARGET).elf $(TARGET)
 	@cp $(TARGET) pkg_structure/$(TARGET)
 	@echo "Build successful. eboot.bin copied to pkg_structure/"
 
