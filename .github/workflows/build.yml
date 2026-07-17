@@ -55,7 +55,6 @@ jobs:
           
           dirs = set()
           for root, _, files in os.walk("."):
-              if "sce_sys" in root: continue
               for file in files:
                   if file.endswith(".gp4") or file.endswith(".pkg"): continue
                   rel_path = os.path.relpath(os.path.join(root, file), ".").replace("\\\\", "/")
@@ -70,7 +69,6 @@ jobs:
           
           xml += "  </files>\n  <rootdir>\n"
           
-          dirs.add("sce_sys")
           tree = {}
           for d in dirs:
               parts = d.split("/")
