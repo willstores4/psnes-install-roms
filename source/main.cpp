@@ -67,28 +67,11 @@ int copy_directory(const char* src_dir, const char* dst_dir) {
 int main(void) {
     log_msg("RomInstaller App Starting...");
     
-    // Dynamically load necessary modules to avoid DT_NEEDED boot crashes
-    int sys_util_handle = sceKernelLoadStartModule("libSceSysUtil.sprx", 0, NULL, 0, NULL, NULL);
-    int sys_svc_handle = sceKernelLoadStartModule("libSceSystemService.sprx", 0, NULL, 0, NULL, NULL);
+    // Removed all dynamic module loading and notifications for debugging.
+    // If the app successfully copies the files and exits after 15 seconds without a corrupted data error on launch,
+    // we know the dynamic loading was the culprit.
 
-    int (*sysUtilSendSystemNotificationWithText)(int, const char*) = NULL;
-    int (*systemServiceHideSplashScreen)(void) = NULL;
-
-    void* ptr = NULL;
-    if (sys_util_handle > 0) {
-        sceKernelDlsym(sys_util_handle, "sceSysUtilSendSystemNotificationWithText", &ptr);
-        sysUtilSendSystemNotificationWithText = (int (*)(int, const char*))ptr;
-    }
-    if (sys_svc_handle > 0) {
-        sceKernelDlsym(sys_svc_handle, "sceSystemServiceHideSplashScreen", &ptr);
-        systemServiceHideSplashScreen = (int (*)(void))ptr;
-    }
-
-    if (systemServiceHideSplashScreen) systemServiceHideSplashScreen();
-
-    if (sysUtilSendSystemNotificationWithText) {
-        sysUtilSendSystemNotificationWithText(222, "ROM Installer started! Copying files...");
-    }
+    log_msg("Creating directories...");
     
     // Create base directories if they don't exist
     mkdir("/data/psnes", 0777);
