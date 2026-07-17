@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
     // Enter an infinite loop so the app doesn't crash on exit.
     // The user must close it manually via the PS button.
     for(;;) {
-        sleep(1);
+        sceKernelUsleep(1000000);
     }
     
     // Returning 0 terminates the application natively on PS4
