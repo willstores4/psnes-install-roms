@@ -12,13 +12,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup .NET Core
+      - name: Setup Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld wget tar unzip
+
+      - name: Setup OpenOrbis Toolchain
+        run: |
+          wget https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain/releases/download/v0.5.4/toolchain-llvm-18.tar.gz -O toolchain.tar.gz
+          mkdir -p $GITHUB_WORKSPACE/openorbis
+          tar -xf toolchain.tar.gz -C $GITHUB_WORKSPACE/openorbis
+          # The tarball might extract into a subdirectory, so we find the actual root
+          TOOLCHAIN_DIR=$(find $GITHUB_WORKSPACE/openorbis -name "include" -type d | head -n 1 | xargs dirname)
+          echo "OO_PS4_TOOLCHAIN=$TOOLCHAIN_DIR" >> $GITHUB_ENV
+
+      - name: Compile C++ Code
+        run: |
+          make
+
+      - name: Setup .NET Core for PkgTool
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '6.0.x'
-
-      - name: Compile C++ with OpenOrbis
-        uses: OpenOrbis/toolchain-action@main
 
       - name: Download PkgTool.Core
         run: |
