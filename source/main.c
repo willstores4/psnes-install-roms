@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
@@ -62,13 +63,29 @@ int copy_directory(const char* src_dir, const char* dst_dir) {
     closedir(dir);
     return 0;
 }
+// Utility function for system notifications
+void notify_popup(const char *p_Format, ...)
+{
+    OrbisNotificationRequest s_Request;
+    memset(&s_Request, '\0', sizeof(s_Request));
+
+    s_Request.reqId = 0; // NotificationRequest
+    s_Request.unk3 = 0;
+    s_Request.useIconImageUri = 0;
+    s_Request.targetId = -1;
+
+    va_list p_Args;
+    va_start(p_Args, p_Format);
+    vsnprintf(s_Request.message, sizeof(s_Request.message), p_Format, p_Args);
+    va_end(p_Args);
+
+    sceKernelSendNotificationRequest(0, &s_Request, sizeof(s_Request), 0);
+}
 
 int main(int argc, char **argv) {
     log_msg("RomInstaller App Starting...");
     
-    // Removed all dynamic module loading and notifications for debugging.
-    // If the app successfully copies the files and exits after 15 seconds without a corrupted data error on launch,
-    // we know the dynamic loading was the culprit.
+    notify_popup("Instalando ROMs de SNES no PS4...");
 
     log_msg("Creating directories...");
     
@@ -82,15 +99,14 @@ int main(int argc, char **argv) {
     
     if (res == 0) {
         log_msg("Copy completed successfully.");
+        notify_popup("Instalacao concluida com sucesso!");
     } else {
         log_msg("Copy failed.");
+        notify_popup("Erro na instalacao das ROMs!");
     }
     
-    // Enter an infinite loop so the app doesn't crash on exit.
-    // The user must close it manually via the PS button.
-    for(;;) {
-        sceKernelUsleep(1000000);
-    }
+    // Give the notification 2 seconds to appear before auto-closing
+    sceKernelUsleep(2000000);
     
     // Returning 0 terminates the application natively on PS4
     return 0;
