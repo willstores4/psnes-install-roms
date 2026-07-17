@@ -10,8 +10,7 @@
 
 
 void log_msg(const char* msg) {
-    // Basic stdout print, which can be seen if someone checks PS4 UART
-    printf("%s\n", msg);
+    // Empty to prevent any potential stdout crashes
 }
 
 int copy_file(const char* src_path, const char* dst_path) {
@@ -64,7 +63,7 @@ int copy_directory(const char* src_dir, const char* dst_dir) {
     return 0;
 }
 
-int main(void) {
+int main(int argc, char **argv) {
     log_msg("RomInstaller App Starting...");
     
     // Removed all dynamic module loading and notifications for debugging.
