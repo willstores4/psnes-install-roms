@@ -8,7 +8,77 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <orbis/libkernel.h>
+#include <orbis/Sysmodule.h>
+#include <orbis/CommonDialog.h>
+#include <orbis/MsgDialog.h>
 
+uint64_t g_total_size = 0;
+uint64_t g_copied_size = 0;
+
+static inline void _orbisCommonDialogSetMagicNumber(uint32_t* magic, const OrbisCommonDialogBaseParam* param) {
+    *magic = (uint32_t)(ORBIS_COMMON_DIALOG_MAGIC_NUMBER + (uint64_t)param);
+}
+
+static inline void _orbisCommonDialogBaseParamInit(OrbisCommonDialogBaseParam *param) {
+    memset(param, 0x0, sizeof(OrbisCommonDialogBaseParam));
+    param->size = (uint32_t)sizeof(OrbisCommonDialogBaseParam);
+    _orbisCommonDialogSetMagicNumber(&(param->magic), param);
+}
+
+static inline void orbisMsgDialogParamInitialize(OrbisMsgDialogParam *param) {
+    memset(param, 0x0, sizeof(OrbisMsgDialogParam));
+    _orbisCommonDialogBaseParamInit(&param->baseParam);
+    param->size = sizeof(OrbisMsgDialogParam);
+}
+
+void init_progress_bar(const char* msg) {
+    OrbisMsgDialogParam param;
+    OrbisMsgDialogProgressBarParam userBarParam;
+
+    sceSysmoduleLoadModuleInternal(ORBIS_SYSMODULE_INTERNAL_COMMON_DIALOG);
+    
+    sceMsgDialogInitialize();
+    orbisMsgDialogParamInitialize(&param);
+    param.mode = ORBIS_MSG_DIALOG_MODE_PROGRESS_BAR;
+
+    memset(&userBarParam, 0, sizeof(userBarParam));
+    userBarParam.msg = msg;
+    userBarParam.barType = ORBIS_MSG_DIALOG_PROGRESSBAR_TYPE_PERCENTAGE;
+    param.progBarParam = &userBarParam;
+
+    if (sceMsgDialogOpen(&param) < 0) return;
+}
+
+void end_progress_bar(void) {
+    sceMsgDialogClose();
+    sceMsgDialogTerminate();
+}
+
+void update_progress_bar(const char* msg) {
+    if (g_total_size == 0) return;
+    float bar_value = (100.0f * ((double) g_copied_size)) / ((double) g_total_size);
+    if (sceMsgDialogUpdateStatus() == ORBIS_COMMON_DIALOG_STATUS_RUNNING) {
+        sceMsgDialogProgressBarSetMsg(0, msg);
+        sceMsgDialogProgressBarSetValue(0, (uint32_t) bar_value);
+    }
+}
+
+void calculate_directory_size(const char* dir_path) {
+    DIR* dir = opendir(dir_path);
+    if (!dir) return;
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+        char path[1024];
+        snprintf(path, sizeof(path), "%s/%s", dir_path, entry->d_name);
+        struct stat st;
+        if (stat(path, &st) == 0) {
+            if (S_ISDIR(st.st_mode)) calculate_directory_size(path);
+            else g_total_size += st.st_size;
+        }
+    }
+    closedir(dir);
+}
 
 void log_msg(const char* msg) {
     // Empty to prevent any potential stdout crashes
@@ -27,6 +97,8 @@ int copy_file(const char* src_path, const char* dst_path) {
     size_t bytes;
     while ((bytes = fread(buffer, 1, sizeof(buffer), src)) > 0) {
         fwrite(buffer, 1, bytes, dst);
+        g_copied_size += bytes;
+        update_progress_bar("Copiando ROMs...");
     }
     
     fclose(src);
@@ -95,7 +167,14 @@ int main(int argc, char **argv) {
     
     // Copy the roms from the PKG app0 folder to the PS4 HDD
     log_msg("Copying roms from /app0/roms to /data/psnes/roms...");
+    
+    // Calculate total size for the progress bar
+    calculate_directory_size("/app0/roms");
+    init_progress_bar("Preparando a copia...");
+    
     int res = copy_directory("/app0/roms", "/data/psnes/roms");
+    
+    end_progress_bar();
     
     if (res == 0) {
         log_msg("Copy completed successfully.");
@@ -108,6 +187,13 @@ int main(int argc, char **argv) {
     // Give the notification 2 seconds to appear before auto-closing
     sceKernelUsleep(2000000);
     
-    // Returning 0 terminates the application natively on PS4
+    // Call the PS4 System Service to cleanly exit to the dashboard (XMB)
+    // This prevents the CE-34878-0 crash that occurs when returning from main without shutting down the context
+    extern int sceSysmoduleLoadModuleInternal(uint32_t sysmodule);
+    sceSysmoduleLoadModuleInternal(0x00a1); // ORBIS_SYSMODULE_INTERNAL_SYSTEM_SERVICE
+    extern int sceSystemServiceLoadExec(const char* param, char* const argv[]);
+    sceSystemServiceLoadExec("exit", NULL);
+    
+    // We still return 0 just in case the compiler warns, though we'll never reach here
     return 0;
 }
