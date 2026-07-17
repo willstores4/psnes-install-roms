@@ -10,7 +10,7 @@ CFLAGS  := -target x86_64-pc-freebsd-elf -fPIC -funwind-tables -c $(IDIRS) -Os
 CXXFLAGS := $(CFLAGS) -nostdinc++ -nostdlibinc -std=c++11
 LDFLAGS := -m elf_x86_64 -pie --script $(OO_PS4_TOOLCHAIN)/link.x --eh-frame-hdr -L$(OO_PS4_TOOLCHAIN)/lib $(OO_PS4_TOOLCHAIN)/lib/crt1.o
 
-LIBS    := -lc -lkernel -lSceSysmodule -lSceSysUtil
+LIBS    := -lc -lkernel -lSceSysmodule -lSceSysUtil -lSceUserService -lSceSystemService
 
 CFILES   := $(wildcard $(SDIR)/*.c)
 CPPFILES := $(wildcard $(SDIR)/*.cpp)

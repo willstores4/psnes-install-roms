@@ -10,6 +10,8 @@
 
 extern "C" {
     int sceSysUtilSendSystemNotificationWithText(int type, const char* text);
+    int sceUserServiceInitialize(void* params);
+    int sceSystemServiceHideSplashScreen(void);
 }
 
 #define SYSUTIL_MODULE_ID 0x009A
@@ -72,6 +74,9 @@ int copy_directory(const char* src_dir, const char* dst_dir) {
 
 int main(void) {
     log_msg("RomInstaller App Starting...");
+    
+    sceUserServiceInitialize(NULL);
+    sceSystemServiceHideSplashScreen();
     
     sceSysmoduleLoadModuleInternal((OrbisSysModuleInternal)SYSUTIL_MODULE_ID);
     sceSysUtilSendSystemNotificationWithText(222, "ROM Installer started! Copying files...");
