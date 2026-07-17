@@ -97,8 +97,6 @@ int copy_file(const char* src_path, const char* dst_path) {
     size_t bytes;
     while ((bytes = fread(buffer, 1, sizeof(buffer), src)) > 0) {
         fwrite(buffer, 1, bytes, dst);
-        g_copied_size += bytes;
-        update_progress_bar("Copiando ROMs...");
     }
     
     fclose(src);
@@ -168,13 +166,7 @@ int main(int argc, char **argv) {
     // Copy the roms from the PKG app0 folder to the PS4 HDD
     log_msg("Copying roms from /app0/roms to /data/psnes/roms...");
     
-    // Calculate total size for the progress bar
-    calculate_directory_size("/app0/roms");
-    init_progress_bar("Preparando a copia...");
-    
     int res = copy_directory("/app0/roms", "/data/psnes/roms");
-    
-    end_progress_bar();
     
     if (res == 0) {
         log_msg("Copy completed successfully.");
