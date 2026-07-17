@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <orbis/Sysmodule.h>
+#include <orbis/SysUtil.h>
 
 void log_msg(const char* msg) {
     // Basic stdout print, which can be seen if someone checks PS4 UART
@@ -65,6 +67,9 @@ int copy_directory(const char* src_dir, const char* dst_dir) {
 int main(void) {
     log_msg("RomInstaller App Starting...");
     
+    sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_SYSUTIL);
+    sceSysUtilSendSystemNotificationWithText(222, "ROM Installer started! Copying files...");
+    
     // Create base directories if they don't exist
     mkdir("/data/psnes", 0777);
     mkdir("/data/psnes/roms", 0777);
@@ -75,12 +80,17 @@ int main(void) {
     
     if (res == 0) {
         log_msg("Copy completed successfully.");
+        sceSysUtilSendSystemNotificationWithText(222, "Copy completed successfully! You can close the app.");
     } else {
         log_msg("Copy failed.");
+        sceSysUtilSendSystemNotificationWithText(222, "Copy failed! Please check your paths.");
     }
     
-    // Let it flush for a short time before the app terminates
-    sleep(2);
+    // Enter an infinite loop so the app doesn't crash on exit.
+    // The user must close it manually via the PS button.
+    for(;;) {
+        sleep(1);
+    }
     
     // Returning 0 terminates the application natively on PS4
     return 0;
