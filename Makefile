@@ -8,7 +8,7 @@ IDIRS   := -I$(OO_PS4_TOOLCHAIN)/include -I$(OO_PS4_TOOLCHAIN)/include/c++/v1
 LDIRS   := -L$(OO_PS4_TOOLCHAIN)/lib
 CFLAGS  := -target x86_64-pc-freebsd-elf -fPIC -funwind-tables -c $(IDIRS) -Os
 CXXFLAGS := $(CFLAGS) -nostdinc++ -nostdlibinc -std=c++11
-LDFLAGS := -m elf_x86_64 -pie --script $(OO_PS4_TOOLCHAIN)/link.x --eh-frame-hdr -L$(OO_PS4_TOOLCHAIN)/lib $(OO_PS4_TOOLCHAIN)/lib/crt1.o $(OO_PS4_TOOLCHAIN)/lib/crtlib.c.o
+LDFLAGS := -m elf_x86_64 -pie --script $(OO_PS4_TOOLCHAIN)/link.x --eh-frame-hdr -L$(OO_PS4_TOOLCHAIN)/lib $(OO_PS4_TOOLCHAIN)/lib/crt1.o
 
 LIBS    := -lc -lkernel
 
