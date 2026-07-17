@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ps4_project fmt="en">
+  <volume>
+    <volume_type>pkg_ps4_app</volume_type>
+    <volume_id>PS4VOLUME</volume_id>
+    <volume_ts>2023-01-01 00:00:00</volume_ts>
+    <package version="01.00" ent_key="00000000000000000000000000000000" passcode="00000000000000000000000000000000"/>
+    <chunk_info chunk_count="1" scenario_count="1">
+      <chunks>
+        <chunk id="0" layer_no="0" label="Chunk 0"/>
+      </chunks>
+      <scenarios>
+        <scenario id="0" type="sp" initial_chunk_count="1" default_weight="1">0</scenario>
+      </scenarios>
+    </chunk_info>
+  </volume>
+  <files img_no="0">
+    <file targ_path="eboot.bin" orig_path="eboot.bin" chunk_no="0"/>
+    <file targ_path="sce_sys/param.sfo" orig_path="sce_sys/param.sfo" chunk_no="0"/>
+    <file targ_path="sce_sys/icon0.png" orig_path="sce_sys/icon0.png" chunk_no="0"/>
+    <file targ_path="sce_sys/pronunciation.xml" orig_path="sce_sys/pronunciation.xml" chunk_no="0"/>
+    <dir targ_path="roms" orig_path="roms"/>
+    <file targ_path="roms/*" orig_path="roms/*" chunk_no="0"/>
+  </files>
+</ps4_project>
