@@ -28,6 +28,12 @@ jobs:
           TOOLCHAIN_DIR=$(find $GITHUB_WORKSPACE/openorbis -name "include" -type d | head -n 1 | xargs dirname)
           echo "OO_PS4_TOOLCHAIN=$TOOLCHAIN_DIR" >> $GITHUB_ENV
 
+      - name: Compile C Code
+        run: |
+          # Give execution permissions to OpenOrbis binaries
+          chmod +x $OO_PS4_TOOLCHAIN/bin/linux/*
+          make
+
       - name: Generate GP4 dynamically
         run: |
           cd pkg_structure
