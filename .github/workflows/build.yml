@@ -28,21 +28,13 @@ jobs:
 
       - name: Compile C++ Code
         run: |
+          # Give execution permissions to OpenOrbis binaries
+          chmod +x $OO_PS4_TOOLCHAIN/bin/linux/*
           make
-
-      - name: Setup .NET Core for PkgTool
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '6.0.x'
-
-      - name: Download PkgTool.Core
-        run: |
-          wget https://github.com/OpenOrbis/LibOrbisPkg/releases/download/v1.1/PkgTool.Core.zip
-          unzip PkgTool.Core.zip -d PkgTool
 
       - name: Build PKG
         run: |
-          dotnet PkgTool/PkgTool.Core.dll pkg_build pkg_structure/pkg.gp4 pkg_structure/
+          $OO_PS4_TOOLCHAIN/bin/linux/PkgTool.Core pkg_build pkg_structure/pkg.gp4 pkg_structure/
 
       - name: Upload PKG Artifact
         uses: actions/upload-artifact@v4
