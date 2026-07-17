@@ -83,14 +83,8 @@ int main(void) {
     
     if (res == 0) {
         log_msg("Copy completed successfully.");
-        if (sysUtilSendSystemNotificationWithText) {
-            sysUtilSendSystemNotificationWithText(222, "Copy completed successfully! You can close the app.");
-        }
     } else {
         log_msg("Copy failed.");
-        if (sysUtilSendSystemNotificationWithText) {
-            sysUtilSendSystemNotificationWithText(222, "Copy failed! Please check your paths.");
-        }
     }
     
     // Enter an infinite loop so the app doesn't crash on exit.
