@@ -181,10 +181,15 @@ int main(int argc, char **argv) {
     
     // Call the PS4 System Service to cleanly exit to the dashboard (XMB)
     // This prevents the CE-34878-0 crash that occurs when returning from main without shutting down the context
-    sceSysmoduleLoadModuleInternal(0x00a1); // ORBIS_SYSMODULE_INTERNAL_SYSTEM_SERVICE
+    sceSysmoduleLoadModuleInternal(ORBIS_SYSMODULE_INTERNAL_SYSTEM_SERVICE);
     extern int sceSystemServiceLoadExec(const char* param, char* const argv[]);
     sceSystemServiceLoadExec("exit", NULL);
     
-    // We still return 0 just in case the compiler warns, though we'll never reach here
+    // Wait infinitely while the PS4 OS processes the exit request.
+    // If we return 0 here, the CRT kills the process abruptly and causes CE-34878-0!
+    for(;;) {
+        sceKernelUsleep(1000000);
+    }
+    
     return 0;
 }
