@@ -6,15 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <orbis/Sysmodule.h>
-
-extern "C" {
-    int sceSysUtilSendSystemNotificationWithText(int type, const char* text);
-    int sceUserServiceInitialize(void* params);
-    int sceSystemServiceHideSplashScreen(void);
-}
-
-#define SYSUTIL_MODULE_ID 0x009A
+#include <orbis/libkernel.h>
 
 
 void log_msg(const char* msg) {
@@ -75,11 +67,35 @@ int copy_directory(const char* src_dir, const char* dst_dir) {
 int main(void) {
     log_msg("RomInstaller App Starting...");
     
-    sceUserServiceInitialize(NULL);
-    sceSystemServiceHideSplashScreen();
-    
-    sceSysmoduleLoadModuleInternal((OrbisSysModuleInternal)SYSUTIL_MODULE_ID);
-    sceSysUtilSendSystemNotificationWithText(222, "ROM Installer started! Copying files...");
+    // Dynamically load necessary modules to avoid DT_NEEDED boot crashes
+    int sys_util_handle = sceKernelLoadStartModule("libSceSysUtil.sprx", 0, NULL, 0, NULL, NULL);
+    int sys_svc_handle = sceKernelLoadStartModule("libSceSystemService.sprx", 0, NULL, 0, NULL, NULL);
+    int user_svc_handle = sceKernelLoadStartModule("libSceUserService.sprx", 0, NULL, 0, NULL, NULL);
+
+    int (*sysUtilSendSystemNotificationWithText)(int, const char*) = NULL;
+    int (*userServiceInitialize)(void*) = NULL;
+    int (*systemServiceHideSplashScreen)(void) = NULL;
+
+    void* ptr = NULL;
+    if (sys_util_handle > 0) {
+        sceKernelDlsym(sys_util_handle, "sceSysUtilSendSystemNotificationWithText", &ptr);
+        sysUtilSendSystemNotificationWithText = (int (*)(int, const char*))ptr;
+    }
+    if (user_svc_handle > 0) {
+        sceKernelDlsym(user_svc_handle, "sceUserServiceInitialize", &ptr);
+        userServiceInitialize = (int (*)(void*))ptr;
+    }
+    if (sys_svc_handle > 0) {
+        sceKernelDlsym(sys_svc_handle, "sceSystemServiceHideSplashScreen", &ptr);
+        systemServiceHideSplashScreen = (int (*)(void))ptr;
+    }
+
+    if (userServiceInitialize) userServiceInitialize(NULL);
+    if (systemServiceHideSplashScreen) systemServiceHideSplashScreen();
+
+    if (sysUtilSendSystemNotificationWithText) {
+        sysUtilSendSystemNotificationWithText(222, "ROM Installer started! Copying files...");
+    }
     
     // Create base directories if they don't exist
     mkdir("/data/psnes", 0777);
@@ -91,10 +107,14 @@ int main(void) {
     
     if (res == 0) {
         log_msg("Copy completed successfully.");
-        sceSysUtilSendSystemNotificationWithText(222, "Copy completed successfully! You can close the app.");
+        if (sysUtilSendSystemNotificationWithText) {
+            sysUtilSendSystemNotificationWithText(222, "Copy completed successfully! You can close the app.");
+        }
     } else {
         log_msg("Copy failed.");
-        sceSysUtilSendSystemNotificationWithText(222, "Copy failed! Please check your paths.");
+        if (sysUtilSendSystemNotificationWithText) {
+            sysUtilSendSystemNotificationWithText(222, "Copy failed! Please check your paths.");
+        }
     }
     
     // Enter an infinite loop so the app doesn't crash on exit.
